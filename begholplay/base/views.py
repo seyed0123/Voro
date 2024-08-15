@@ -1,8 +1,9 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
-from .forms import SignupForm, LoginForm
+from .forms import SignupForm, LoginForm, PlayerProfileForm
+from .models import Player
 
 
 def signup(request):
@@ -23,7 +24,7 @@ def login(request):
         if form.is_valid():
             user = form.get_user()
             auth_login(request, user)
-            return redirect('home')
+            return redirect('index')
         else:
             messages.error(request, 'Invalid username or password')
     else:
@@ -34,3 +35,26 @@ def login(request):
 def logout_view(request):
     auth_logout(request)
     return redirect('login')
+
+
+def index(request):
+    return render(request, 'index.html')
+
+
+@login_required
+def profile(request):
+    player = Player.objects.get(user=request.user)
+
+    if request.method == 'POST':
+        form = PlayerProfileForm(request.POST, request.FILES, instance=player)
+        if form.is_valid():
+            form.save()
+            return redirect('profile')  # Redirect to a profile page or another page after saving
+    else:
+        form = PlayerProfileForm(instance=player)
+
+    return render(request, 'profile.html', {'form': form, 'player': player})
+
+
+def play(request):
+    pass
