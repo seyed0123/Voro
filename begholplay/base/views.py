@@ -1,9 +1,9 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib import messages
-from .forms import SignupForm, LoginForm, PlayerProfileForm
-from .models import Player
+from .forms import SignupForm, LoginForm, PlayerProfileForm, JoinLobbyForm, CreateLobbyForm
+from .models import Player, Lobby
 
 
 def signup(request):
@@ -24,9 +24,8 @@ def login(request):
         if form.is_valid():
             user = form.get_user()
             auth_login(request, user)
-            return redirect('index')
-        else:
-            messages.error(request, 'Invalid username or password')
+            next_url = request.GET.get('next', 'index')
+            return redirect(next_url)
     else:
         form = LoginForm()
     return render(request, 'login.html', {'form': form})
@@ -56,5 +55,43 @@ def profile(request):
     return render(request, 'profile.html', {'form': form, 'player': player})
 
 
+@login_required
 def play(request):
-    pass
+    if request.method == 'POST':
+        if 'join' in request.POST:
+            form = JoinLobbyForm(request.POST)
+            if form.is_valid():
+                lobby = form.cleaned_data['lobby']
+                player = Player.objects.get(user=request.user)
+
+                # Check if the player is already in the lobby
+                if player in lobby.players.all():
+                    messages.info(request, 'You are already in this lobby.')
+                    return redirect('lobby_detail', pk=lobby.pk)
+
+                # Add player to the lobby's players
+                lobby.players.add(player)
+                messages.success(request, 'Successfully joined the lobby.')
+                return redirect('lobby_detail', pk=lobby.pk)
+            else:
+                messages.error(request, 'There was an error with your submission.')
+
+        if 'create' in request.POST:
+            form = CreateLobbyForm(request.POST)
+            form.user = request.user
+            if form.is_valid():
+                lobby = form.save()
+                return redirect('lobby_detail', pk=lobby.pk)
+            else:
+                if form.errors['name']:
+                    for error in form.errors['name']:
+                        messages.error(request,error)
+
+    create_form = JoinLobbyForm()
+    join_form = CreateLobbyForm()
+    return render(request, 'home_play.html', {'create_form': create_form, 'join_form': join_form})
+
+
+def lobby_detail(request, pk):
+    lobby = get_object_or_404(Lobby, pk=pk)
+    return render(request, 'lobby_detail.html', {'lobby': lobby})

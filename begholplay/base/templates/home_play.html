@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Play{% endblock %}
+
+{% block content %}
+<div class="container mt-3">
+    <div class="row">
+
+        <div class="col-12 col-md-6 mb-3">
+            <div class="shadow p-4 bg-light rounded">
+                <h2 class="text-center text-dark">Join the Lobby</h2>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="join">
+                    <div class="form-group">
+                        {{ join_form.name.label_tag }}
+                        {{ join_form.name }}
+                    </div>
+                    <div class="form-group">
+                        {{ join_form.password.label_tag }}
+                        {{ join_form.password }}
+                    </div>
+                    <div class="text-end my-2">
+                        <button type="submit" class="btn btn-primary">Join Lobby</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+
+        <div class="col-12 col-md-6 mb-3">
+            <div class="shadow p-4 bg-light rounded">
+                <h2 class="text-center text-dark">Create the Lobby</h2>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="create">
+                    <div class="form-group">
+                        {{ create_form.name.label_tag }}
+                        {{ create_form.name }}
+                        {% if create_form.name.errors %}
+                            <div class="alert alert-danger mt-2">
+                                {% for error in create_form.name.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        {{ create_form.password.label_tag }}
+                        {{ create_form.password }}
+                    </div>
+                    <div class="text-end my-2">
+                        <button type="submit" class="btn btn-primary">Create Lobby</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

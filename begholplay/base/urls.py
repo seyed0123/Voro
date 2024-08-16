@@ -8,5 +8,6 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('profile/', views.profile, name='profile'),
     path('play/', views.play, name='play'),
+    path('lobby/<int:pk>/', views.lobby_detail, name='lobby_detail'),
 
 ]
