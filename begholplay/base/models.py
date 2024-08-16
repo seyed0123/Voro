@@ -20,6 +20,7 @@ class Player(models.Model):
         ],
         default='#4169E1',
     )
+    in_lobby = models.BooleanField(default=False)
 
 
 class Match(models.Model):
