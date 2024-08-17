@@ -14,11 +14,13 @@
                     <li class="list-group-item d-flex align-items-center list-group-item-info">
                         <img src="{{ player.profile_photo.url }}" alt="Profile Photo" class="img-thumbnail img-fluid me-3" style="max-width: 10%; height: auto;">
                         {{ player.user.username }}
+                        <div class="img-thumbnail ms-auto" style="background-color: {{ player.match_color }}; width: 3vw; height: 2vw;"></div>
                     </li>
                 {% else %}
                      <li class="list-group-item d-flex align-items-center">
                         <img src="{{ player.profile_photo.url }}" alt="Profile Photo" class="img-thumbnail img-fluid me-3" style="max-width: 10%; height: auto;">
                         {{ player.user.username }}
+                     <div class="img-thumbnail ms-auto" style="background-color: {{ player.match_color }}; width: 3vw; height: 2vw;"></div>
                     </li>
 
                 {% endif %}
@@ -32,12 +34,12 @@
     </div>
 
         <div class="d-flex justify-content-between mt-3">
-        <button id="update-players-btn" class="btn btn-primary">Update Players</button>
-
-        {% if is_owner %}
-            <button id="start-game-btn" class="btn btn-success ms-auto">Start Game</button>
-        {% endif %}
-    </div>
+            <button id="update-players-btn" class="btn btn-primary">Update Players</button>
+            <button id="leave-lobby-btn" class="btn btn-danger ms-2">Leave</button>
+            {% if is_owner %}
+                <button id="start-game-btn" class="btn btn-success ms-auto">Start Game</button>
+            {% endif %}
+        </div>
 
     </div>
 
@@ -53,6 +55,7 @@
                 type: 'POST',
                 url: window.location.href,
                 data: {
+                    'type': 'update',
                     'csrfmiddlewaretoken': '{{ csrf_token }}',
                 },
                 success: function(response){
@@ -81,25 +84,47 @@
                 }
             });
         });
-    });
 
-    $('#start-game-btn').on('click', function(){
-        $.ajax({
-            type: 'POST',
-            url: window.location.href + 'start-game/',
-            data: {
-                'csrfmiddlewaretoken': '{{ csrf_token }}',
-            },
-            success: function(response){
+        $('#start-game-btn').on('click', function(){
+            $.ajax({
+                type: 'POST',
+                url: window.location.href + 'start-game/',
+                data: {
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',
+                },
+                success: function(response){
 
-                window.location.href = response.redirect_url;
-            },
-            error: function(xhr, status, error){
-                console.error('Error:', error);
-                alert('There was an error starting the game.');
-            }
+                    window.location.href = response.redirect_url;
+                },
+                error: function(xhr, status, error){
+                    console.error('Error:', error);
+                    alert('There was an error starting the game.');
+                }
+            });
         });
+
+        $('#leave-lobby-btn').on('click',function () {
+            $.ajax({
+                type: 'POST',
+                url: window.location.href,
+                data:{
+                    type: 'leave',
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',
+                },
+                success: function (response){
+                     window.location.href = response.redirect_url
+                },
+                error: function(xhr, status, error){
+                    console.error('Error:', error);
+                    alert('There was an error starting the game.');
+                }
+
+            })
+        })
+
     });
+
+
 
 </script>
 
