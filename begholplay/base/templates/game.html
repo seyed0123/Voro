@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}{{ lobby.name }}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            {% for player in players %}
+                <div id="Player_card_{{ player.user.username }}" class="card m-2 border-3 border-dark col-lg-1 col-2" style="background: {{ player.match_color }}">
+                  <img src="{{ player.profile_photo.url }}" class="card-img-top py-1 py-md-2" alt="Profile_photo">
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div id="grid-container" class="container mt-5 p-2 bg-dark-subtle border" >
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script>
+        $(document).ready(function () {
+        const gridSize = 8;
+        const gridContainer = $('#grid-container');
+        const cellSizeMobile = 100 / gridSize; // For mobile views
+        const cellSizeLaptop = 3; // For larger views
+
+        // Create the WebSocket connection
+        const lobbyId = "{{ lobby.pk }}";
+        const wsUrl = `ws://${window.location.host}/ws/lobby/${lobbyId}/`;
+        const gameSocket = new WebSocket(wsUrl);
+
+        // Generate the grid
+        for (let row = 0; row < gridSize; row++) {
+            const rowDiv = $('<div class="w-100 d-flex"></div>');
+            for (let col = 0; col < gridSize; col++) {
+                const cellSize = $(window).width() < 992 ? cellSizeMobile : cellSizeLaptop;
+                const ind = row * gridSize + col + 1
+                const cell = $(`
+                    <div class="flex-fill m-1 rounded shadow-lg border-2" id="cell-${ind}" style="background-color: #007bff; color: white; border: 1px solid #0056b3; height: ${cellSize}vw; width: ${cellSize}vw; display: flex; align-items: center; justify-content: center;">
+
+                    </div>
+                `);
+
+                // Add click event to send a message via WebSocket
+                cell.on('click', function() {
+                    const message = {
+                        'message': `User pressed button ${ind}`,
+                        'cell': ind
+                    };
+                    gameSocket.send(JSON.stringify(message));
+                });
+
+                rowDiv.append(cell);
+            }
+            gridContainer.append(rowDiv);
+        }
+
+        // Handle incoming messages from WebSocket
+        gameSocket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            {#alert(data.message);#}
+
+            // Change the color of the clicked cell
+            const cellId = `#cell-${data.cell}`;
+            $(cellId).css('background-color', data.color);
+        };
+
+        // Handle WebSocket closure
+        gameSocket.onclose = function(event) {
+            console.error('Game socket closed unexpectedly');
+        };
+
+        // Optionally, handle WebSocket errors
+        gameSocket.onerror = function(error) {
+            console.error('WebSocket error:', event);
+        };
+
+        // Update grid on window resize
+        $(window).resize(function() {
+            $('#grid-container').empty();
+            for (let row = 0; row < gridSize; row++) {
+                const rowDiv = $('<div class="w-100 d-flex"></div>');
+                for (let col = 0; col < gridSize; col++) {
+                    const cellSize = $(window).width() < 992 ? cellSizeMobile : cellSizeLaptop;
+                    const cell = $(`
+                        <div class="flex-fill m-1 rounded shadow-lg border-2" style="background-color: #007bff; color: white; border: 1px solid #0056b3; height: ${cellSize}vw; width: ${cellSize}vw; display: flex; align-items: center; justify-content: center;">
+                        </div>
+                    `);
+                    rowDiv.append(cell);
+                }
+                gridContainer.append(rowDiv);
+            }
+        });
+    });
+
+    </script>
+{% endblock %}

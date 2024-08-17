@@ -8,6 +8,7 @@ from .forms import SignupForm, LoginForm, PlayerProfileForm, JoinLobbyForm, Crea
 from .models import Player, Lobby
 import random
 
+
 def signup(request):
     if request.method == 'POST':
         form = SignupForm(request.POST)
@@ -65,12 +66,13 @@ def play(request):
             if form.is_valid():
                 lobby = form.cleaned_data['lobby']
                 player = Player.objects.get(user=request.user)
-                if player.in_lobby:
-                    messages.warning(request, 'You are already in another lobby')
-                    return redirect('play')
                 if player in lobby.players.all():
                     messages.info(request, 'You are already in this lobby.')
                     return redirect('lobby_detail', pk=lobby.pk)
+
+                if player.in_lobby:
+                    messages.warning(request, 'You are already in another lobby')
+                    return redirect('play')
 
                 taken_colors = lobby.players.values_list('match_color', flat=True)
                 if player.favorite_color not in taken_colors:
@@ -131,7 +133,8 @@ def lobby_detail(request, pk):
         if request.POST['type'] == 'update':
             players = list(lobby.players.all().values('user__username', 'profile_photo'))
             return JsonResponse({'players': list(players), 'base_url': request.build_absolute_uri('/') + 'media/',
-                             'owner_username': owner_player.user.username})
+                                 'owner_username': owner_player.user.username, 'match_status': lobby.is_match_started,
+                                 'match_url': reverse('game', args=[lobby.pk])})
 
         elif request.POST['type'] == 'leave':
             player = Player.objects.get(user=request.user)
@@ -158,13 +161,21 @@ def lobby_detail(request, pk):
 def start_game(request, pk):
     lobby = get_object_or_404(Lobby, pk=pk)
 
-
     if request.user != lobby.owner:
         return JsonResponse({'error': 'Unauthorized'}, status=403)
-
 
     lobby.is_match_started = True
     lobby.save()
 
-
     return JsonResponse({'redirect_url': reverse('game', args=[lobby.pk])})
+
+
+@login_required
+def game(request, pk):
+    lobby = get_object_or_404(Lobby, pk=pk)
+    player = Player.objects.get(user=request.user)
+    players = list(lobby.players.all())
+    if player not in players:
+        raise Http404("This page does not exist.")
+
+    return render(request, 'game.html', {'lobby': lobby, 'players': players})

@@ -4,3 +4,4 @@ from .models import *
 admin.site.register(Player)
 admin.site.register(Match)
 admin.site.register(Lobby)
+admin.site.register(Player_ranking)

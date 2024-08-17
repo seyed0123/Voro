@@ -65,6 +65,10 @@
                     playersList.empty();
                     var baseUrl = response.base_url;
                     var ownerUsername = response.owner_username;
+                    if (response.match_status){
+                        window.location.href = response.match_url
+                        return
+                    }
                     response.players.forEach(function(player){
                         var imgUrl = baseUrl + player.profile_photo
                         var listItemClass = player.user__username === ownerUsername

@@ -27,12 +27,15 @@ SECRET_KEY = 'django-insecure-*@w^=tl$m1rml5%-f6um#%f_ty_&*uqyk4qv=1$afffpr7df!*
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['192.168.210.26','127.0.0.1']
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
+    'channels',
+    
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -43,6 +46,7 @@ INSTALLED_APPS = [
     # Created Apps
     'base',
 ]
+ASGI_APPLICATION = 'begholplay.asgi.application'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -130,3 +134,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
 
 LOGIN_URL = 'login'
+
+# Channels Layers Configuration
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',  # For development
+    },
+}

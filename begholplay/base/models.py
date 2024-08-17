@@ -75,10 +75,10 @@ class Lobby(models.Model):
 
 
 class Player_ranking(models.Model):
-    game = models.ForeignKey(Lobby, on_delete=models.CASCADE, related_name='rankings')
-    player = models.ForeignKey(User, on_delete=models.CASCADE, related_name='rankings')
+    game = models.ForeignKey(Match, on_delete=models.CASCADE, related_name='rankings')
+    player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='rankings')
     rank = models.IntegerField()
     score = models.IntegerField()
 
     def __str__(self):
-        return f"{self.player.username} - Rank: {self.rank} in Game: {self.game.name}"
+        return f"{self.player.user.username} - Rank: {self.rank} in Game: {self.game.lobby.name}"
