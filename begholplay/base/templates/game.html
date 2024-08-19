@@ -6,18 +6,40 @@
     <div class="container">
         <div class="row">
             {% for player in players %}
-                <div id="Player_card_{{ player.user.username }}" class="card m-2 border-3 border-dark col-lg-1 col-2" style="background: {{ player.match_color }}">
+                <div id="player-card-{{ player.user.id }}" class="card m-2 border-1 border-dark col-lg-1 col-2 shadow-lg" style="background: {{ player.match_color }}">
                   <img src="{{ player.profile_photo.url }}" class="card-img-top py-1 py-md-2" alt="Profile_photo">
                 </div>
             {% endfor %}
         </div>
+        <div id="grid-container" class="container mt-5 p-2 border" >
+        </div>
     </div>
-    <div id="grid-container" class="container mt-5 p-2 bg-dark-subtle border" >
-    </div>
+
 {% endblock %}
 
 {% block js %}
     <script>
+    (function($) {
+        $.fn.generateCircles = function(number) {
+            // Ensure the number is between 0 and 4
+            if (number < 0 || number > 4) {
+                console.error("Number must be between 0 and 4.");
+                return this;
+            }
+
+            // Clear any existing circles
+            this.empty();
+
+            // Generate the circles
+            for (let i = 0; i < number; i++) {
+                this.append('<div class="circle col-6"></div>');
+            }
+
+            // Return the jQuery object for chaining
+            return this;
+        };
+    })(jQuery);
+
         $(document).ready(function () {
         const gridSize = 8;
         const gridContainer = $('#grid-container');
@@ -25,9 +47,13 @@
         const cellSizeLaptop = 3; // For larger views
 
         // Create the WebSocket connection
+        var current_turn = '#player-card-{{ lobby.owner.id }}'
         const lobbyId = "{{ lobby.pk }}";
         const wsUrl = `ws://${window.location.host}/ws/lobby/${lobbyId}/`;
         const gameSocket = new WebSocket(wsUrl);
+        const clickSound = new Audio('{{base_url}}sounds/click.wav');
+        const changeSound = new Audio('{{base_url}}sounds/change.wav');
+        const changeAfterSound = new Audio('{{base_url}}sounds/changeAfter.mp3');
 
         // Generate the grid
         for (let row = 0; row < gridSize; row++) {
@@ -36,7 +62,7 @@
                 const cellSize = $(window).width() < 992 ? cellSizeMobile : cellSizeLaptop;
                 const ind = row * gridSize + col + 1
                 const cell = $(`
-                    <div class="flex-fill m-1 rounded shadow-lg border-2" id="cell-${ind}" style="background-color: #007bff; color: white; border: 1px solid #0056b3; height: ${cellSize}vw; width: ${cellSize}vw; display: flex; align-items: center; justify-content: center;">
+                    <div class="flex-fill m-1 rounded shadow-lg border-2 row" id="cell-${ind}" style="background-color: #007bff; color: white; border: 1px solid #0056b3; height: ${cellSize}vw; width: ${cellSize}vw; display: flex; align-items: center; justify-content: center;">
 
                     </div>
                 `);
@@ -48,6 +74,7 @@
                         'cell': ind
                     };
                     gameSocket.send(JSON.stringify(message));
+                    clickSound.play();
                 });
 
                 rowDiv.append(cell);
@@ -55,42 +82,55 @@
             gridContainer.append(rowDiv);
         }
 
+        $(current_turn).toggleClass('border-1 border-4');
+        $("#grid-container").css('background-color', '{{ own_color }}');
+
+        var player_colors = {};
+        {% for player in players %}
+            player_colors['{{ player.user.id }}'] = '{{ player.match_color|escapejs }}';
+        {% endfor %}
+        console.log(player_colors);
+
         // Handle incoming messages from WebSocket
         gameSocket.onmessage = function(event) {
             const data = JSON.parse(event.data);
+            console.log(data)
+            if(data.message==='change'){
+                 const cellId = `#cell-${data.cell}`;
+                 console.log(data.color !== 'None' ,data.color)
+                 if (data.color!=='None'){
+                     changeSound.play()
+                     $(cellId).css('background-color', data.color);
+                 }else{
+                     $(cellId).css('background-color', '#007bff');
+                 }
+                $(cellId).generateCircles(data.number);
+                 changeAfterSound.play()
+            }else if (data.message==='current_turn'){
+                $(current_turn).toggleClass('border-4 border-1');
+                current_turn = `#player-card-${data.turn}`;
+                $(current_turn).toggleClass('border-1 border-4');
+                $("#grid-container").css('background-color', player_colors[data.turn]);
+            }else if(data.message==='error'){
+                alert(data.body);
+            }
             {#alert(data.message);#}
 
             // Change the color of the clicked cell
-            const cellId = `#cell-${data.cell}`;
-            $(cellId).css('background-color', data.color);
+            {#const cellId = `#cell-${data.cell}`;#}
+            {#$(cellId).css('background-color', data.color);#}
         };
 
         // Handle WebSocket closure
         gameSocket.onclose = function(event) {
             console.error('Game socket closed unexpectedly');
+            alert('Socket closed refresh the page')
         };
 
         // Optionally, handle WebSocket errors
         gameSocket.onerror = function(error) {
             console.error('WebSocket error:', event);
         };
-
-        // Update grid on window resize
-        $(window).resize(function() {
-            $('#grid-container').empty();
-            for (let row = 0; row < gridSize; row++) {
-                const rowDiv = $('<div class="w-100 d-flex"></div>');
-                for (let col = 0; col < gridSize; col++) {
-                    const cellSize = $(window).width() < 992 ? cellSizeMobile : cellSizeLaptop;
-                    const cell = $(`
-                        <div class="flex-fill m-1 rounded shadow-lg border-2" style="background-color: #007bff; color: white; border: 1px solid #0056b3; height: ${cellSize}vw; width: ${cellSize}vw; display: flex; align-items: center; justify-content: center;">
-                        </div>
-                    `);
-                    rowDiv.append(cell);
-                }
-                gridContainer.append(rowDiv);
-            }
-        });
     });
 
     </script>

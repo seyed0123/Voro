@@ -1,10 +1,11 @@
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, Http404
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
+from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib import messages
 from django.urls import reverse
 from .forms import SignupForm, LoginForm, PlayerProfileForm, JoinLobbyForm, CreateLobbyForm
+from base.game_logic import create_game
 from .models import Player, Lobby
 import random
 
@@ -166,6 +167,7 @@ def start_game(request, pk):
 
     lobby.is_match_started = True
     lobby.save()
+    create_game(lobby, request.user)
 
     return JsonResponse({'redirect_url': reverse('game', args=[lobby.pk])})
 
@@ -174,8 +176,9 @@ def start_game(request, pk):
 def game(request, pk):
     lobby = get_object_or_404(Lobby, pk=pk)
     player = Player.objects.get(user=request.user)
+    own_color = Player.objects.get(user_id=lobby.owner_id).match_color
     players = list(lobby.players.all())
     if player not in players:
         raise Http404("This page does not exist.")
 
-    return render(request, 'game.html', {'lobby': lobby, 'players': players})
+    return render(request, 'game.html', {'lobby': lobby, 'players': players, 'own_color': own_color, 'base_url': request.build_absolute_uri('/') + 'media/'})
