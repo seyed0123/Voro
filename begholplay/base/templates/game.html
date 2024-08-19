@@ -8,6 +8,12 @@
             {% for player in players %}
                 <div id="player-card-{{ player.user.id }}" class="card m-2 border-1 border-dark col-lg-1 col-2 shadow-lg" style="background: {{ player.match_color }}">
                   <img src="{{ player.profile_photo.url }}" class="card-img-top py-1 py-md-2" alt="Profile_photo">
+                    {% if player.user.id == user_id %}
+                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-award" viewBox="0 0 16 16">
+                          <path d="M9.669.864 8 0 6.331.864l-1.858.282-.842 1.68-1.337 1.32L2.6 6l-.306 1.854 1.337 1.32.842 1.68 1.858.282L8 12l1.669-.864 1.858-.282.842-1.68 1.337-1.32L13.4 6l.306-1.854-1.337-1.32-.842-1.68zm1.196 1.193.684 1.365 1.086 1.072L12.387 6l.248 1.506-1.086 1.072-.684 1.365-1.51.229L8 10.874l-1.355-.702-1.51-.229-.684-1.365-1.086-1.072L3.614 6l-.25-1.506 1.087-1.072.684-1.365 1.51-.229L8 1.126l1.356.702z"/>
+                          <path d="M4 11.794V16l4-1 4 1v-4.206l-2.018.306L8 13.126 6.018 12.1z"/>
+                        </svg>
+                    {% endif %}
                 </div>
             {% endfor %}
         </div>
@@ -54,6 +60,8 @@
         const clickSound = new Audio('{{base_url}}sounds/click.wav');
         const changeSound = new Audio('{{base_url}}sounds/change.wav');
         const changeAfterSound = new Audio('{{base_url}}sounds/changeAfter.mp3');
+        const explode =  new Audio('{{base_url}}sounds/explosion.wav');
+        const scream =  new Audio('{{base_url}}sounds/scream.wav');
 
         // Generate the grid
         for (let row = 0; row < gridSize; row++) {
@@ -94,7 +102,7 @@
         // Handle incoming messages from WebSocket
         gameSocket.onmessage = function(event) {
             const data = JSON.parse(event.data);
-            console.log(data)
+            {#console.log(data)#}
             if(data.message==='change'){
                  const cellId = `#cell-${data.cell}`;
                  console.log(data.color !== 'None' ,data.color)
@@ -113,6 +121,20 @@
                 $("#grid-container").css('background-color', player_colors[data.turn]);
             }else if(data.message==='error'){
                 alert(data.body);
+            }else if(data.message === 'endgame'){
+                const endgameCard = `
+                    <div class="card text-center">
+                        <img src="${$(current_turn).find('img').attr('src')}" class="card-img-top" alt="Endgame Image">
+                        <div class="card-body">
+                            <h5 class="card-title">Game Finished</h5>
+                            <p class="card-text">Congratulations for your play.</p>
+                            <a href="{{lobby_url}}" class="btn btn-primary">Go to Lobby Details</a>
+                        </div>
+                    </div>
+                `;
+                $('#grid-container').html(endgameCard);
+                explode.play()
+                scream.play()
             }
             {#alert(data.message);#}
 

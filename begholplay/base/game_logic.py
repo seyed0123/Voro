@@ -18,7 +18,7 @@ def create_game(lobby, user):
             'Player': 'None'
         }
     for player in list(lobby.players.all()):
-        board[player.user.id] = "not_start"
+        board[player.user.id] = {'status': "not_start", 'number': 0, 'boom': False}
     Match.objects.create(lobby=lobby, board=json.dumps(board), current_turn=user.id, last_active_player=0)
 
 
@@ -56,11 +56,12 @@ class Game:
         board_value = self.board.get(f"{x},{y}")
 
         # Start state handling
-        if self.board[self.user_id] == 'not_start' and board_value['Player'] == 'None':
+        if self.board[self.user_id]['status'] == 'not_start' and board_value['Player'] == 'None':
+            self.board[self.user_id]['number'] += 1
             board_value['number'] += 1
             board_value['color'] = await sync_to_async(lambda: self.player.match_color)()
             board_value['Player'] = self.user_id
-            self.board[self.user_id] = 'start'
+            self.board[self.user_id]['status'] = 'start'
             self.match.board = json.dumps(self.board)
             await sync_to_async(self.match.save)()
             return {
@@ -76,6 +77,13 @@ class Game:
 
         # Handle updating the board
         if board_value['number'] < 3:
+            if board_value['Player'] == 'None':
+                self.board[self.user_id]['number'] += 1
+            elif board_value['Player'] != self.user_id:
+                self.board[board_value['Player']]['number'] -= 1
+                self.board[self.user_id]['number'] += 1
+
+
             board_value['number'] += 1
             board_value['color'] = await sync_to_async(lambda: self.player.match_color)()
             board_value['Player'] = self.user_id
@@ -89,9 +97,13 @@ class Game:
 
         # Handle board state reset
         elif board_value['number'] == 3:
+            self.board[board_value['Player']]['number'] -= 1
+            self.board[self.user_id]['boom'] = True
+
             board_value['number'] = 0
             board_value['color'] = 'None'
             board_value['Player'] = 'None'
+
             self.match.board = json.dumps(self.board)
             await sync_to_async(self.match.save)()
             ret_list = []
@@ -111,36 +123,37 @@ class Game:
                 'color': 'None'
             }, ret_list
 
-    async def validate_game(self):
+    async def validate_game(self, players):
         # Initialize player status
-        players_status = {'None': {'number': 0}}
+        players_status = {'None': {'number': 0}, 'loss': set()}
         player_ids = {}
         # Prepare the players' IDs in an async-safe manner
-        for player in self.players:
-            player_id = await sync_to_async(lambda: player.user.id)()
+        for player in players:
+            player_id = player
             player_ids[player] = player_id
             players_status[str(player_id)] = {
-                'number': 0,
+                'number': self.board[str(player_id)]['number'],
             }
 
         # Iterate over the board and count pieces for each player
-        for ind in range(Game.border_size ** 2):
-            x, y = (ind // Game.border_size), (ind % Game.border_size) + 1
-            player_at_position = self.board[f"{x},{y}"]['Player']
-            if player_at_position in players_status:
-                players_status[player_at_position]['number'] += 1
+        # for ind in range(Game.border_size ** 2):
+        #     x, y = (ind // Game.border_size), (ind % Game.border_size) + 1
+        #     player_at_position = self.board[f"{x},{y}"]['Player']
+        #     if player_at_position in players_status:
+        #         players_status[player_at_position]['number'] += 1
 
         # Determine the status of each player
         num_loss = 0
         ok_player = None
-        for player in self.players:
+        for player in players:
             player_id = str(player_ids[player])
-            if players_status[player_id]['number'] == 0 and self.board[player_id] == 'start':
-                players_status[player_id]['status'] = 'loss'
+            if players_status[player_id]['number'] == 0 and self.board[player_id]['status'] == 'start' and self.board[player_id]['boom'] == False:
+                # players_status[player_id]['status'] = 'loss'
+                players_status['loss'].add(player_id)
                 num_loss += 1
             else:
-                ok_player = player
-                players_status[player_id]['status'] = 'ok'
+                ok_player = player_id
+                # players_status[player_id]['status'] = 'ok'
 
         # Determine overall game status
         if num_loss == len(self.players) - 1:
@@ -148,4 +161,5 @@ class Game:
         else:
             players_status['status'] = 'continue'
 
+        players_status['ok_player'] = ok_player
         return players_status

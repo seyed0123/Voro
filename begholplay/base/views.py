@@ -132,7 +132,7 @@ def lobby_detail(request, pk):
 
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         if request.POST['type'] == 'update':
-            players = list(lobby.players.all().values('user__username', 'profile_photo'))
+            players = list(lobby.players.all().values('user__username', 'profile_photo','match_color'))
             return JsonResponse({'players': list(players), 'base_url': request.build_absolute_uri('/') + 'media/',
                                  'owner_username': owner_player.user.username, 'match_status': lobby.is_match_started,
                                  'match_url': reverse('game', args=[lobby.pk])})
@@ -181,4 +181,4 @@ def game(request, pk):
     if player not in players:
         raise Http404("This page does not exist.")
 
-    return render(request, 'game.html', {'lobby': lobby, 'players': players, 'own_color': own_color, 'base_url': request.build_absolute_uri('/') + 'media/'})
+    return render(request, 'game.html', {'lobby': lobby, 'players': players, 'own_color': own_color, 'base_url': request.build_absolute_uri('/') + 'media/' , 'lobby_url':reverse('lobby_detail', args=[lobby.pk]) , 'user_id':request.user.id})

@@ -45,8 +45,6 @@ class GameConsumer(AsyncWebsocketConsumer):
             self.channel_layer.group_channels = set()
         self.channel_layer.group_channels.add(self.scope['user'].id)
 
-
-
         await self.accept()
 
         await self.send_game_state(lobby)
@@ -92,6 +90,16 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         players = list(self.channel_layer.group_channels)
         players.sort()
+
+        # if hasattr(self.channel_layer, 'player_status'):
+        #     players_to_remove = []
+        #     for player in players:
+        #         if self.channel_layer.player_status[str(player)]['status'] == 'loss':
+        #             players_to_remove.append(player)
+        #
+        #     for player in players_to_remove:
+        #         players.remove(player)
+
         if self.channel_layer.current_turn_ind >= len(players) - 1:
             self.channel_layer.current_turn_ind = 0
         else:
@@ -127,7 +135,6 @@ class GameConsumer(AsyncWebsocketConsumer):
                 'message': 'error',
                 'body': 'it\'s not your turn'
             }))
-
             return
 
         game_class = Game(player, self.lobby_id, self.channel_layer.group_channels)
@@ -149,19 +156,40 @@ class GameConsumer(AsyncWebsocketConsumer):
             )
             saf += res[1]
             flag = True
-
             # await asyncio.sleep(0.1)
-            val = await game_class.validate_game()
-            if val['status'] == 'finish':
-                pass
+            if not item[1]:
+                val = await game_class.validate_game(list(self.channel_layer.group_channels))
+                for player in list(val['loss']):
+                    self.channel_layer.group_channels.discard(int(player))
+                if val['status'] == 'finish' or len(self.channel_layer.group_channels)==1 :
+                    await self.channel_layer.group_send(
+                        self.lobby_group_name,
+                        {
+                            'type': 'game_message',
+                            'message': 'endgame',
+                            'turn': val['ok_player']
+                        }
+                    )
+                    await self.delete_match()
+                    return
 
         if flag:
+            game_class.board[str(user.id)]['boom'] = False
+            game_class.match.board = json.dumps(game_class.board)
+            await sync_to_async(game_class.match.save)()
             await self.next_player()
         else:
             await self.send(text_data=json.dumps({
                 'message': 'error',
                 'body': 'choose valid cell'
             }))
+
+    async def delete_match(self):
+        match = await sync_to_async(Match.objects.get)(lobby_id=self.lobby_id)
+        await sync_to_async(match.delete)()
+        lobby = await sync_to_async(Lobby.objects.get)(id=self.lobby_id)
+        lobby.is_match_started = False
+        await sync_to_async(lobby.save)()
 
     async def game_message(self, event):
         # Send message to WebSocket, including the cell ID and color

@@ -77,8 +77,11 @@
 
                         playersList.append(
                             '<li class="' + listItemClass + '">' +
-                            '<img src="' + imgUrl + '" alt="Profile Photo" class="img-thumbnail img-fluid me-3" style="max-width: 10%; height: auto;">' +
-                            player.user__username + '</li>'
+                                '<img src="' + imgUrl + '" alt="Profile Photo" class="img-thumbnail img-fluid me-3" style="max-width: 10%; height: auto;">' +
+                                player.user__username +
+                                '<div class="img-thumbnail ms-auto" style="background-color: ' + player.match_color + '; width: 3vw; height: 2vw;"></div>' +
+                            '</li>'
+
                         );
                     });
                 },
