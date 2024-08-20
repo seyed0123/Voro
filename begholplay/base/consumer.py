@@ -45,6 +45,8 @@ class GameConsumer(AsyncWebsocketConsumer):
             self.channel_layer.group_channels = set()
         self.channel_layer.group_channels.add(self.scope['user'].id)
 
+        if not hasattr(self.channel_layer, 'removed_list'):
+            self.channel_layer.removed_list = set()
         await self.accept()
 
         await self.send_game_state(lobby)
@@ -56,7 +58,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         board = json.loads(match.board)
 
         if not hasattr(self.channel_layer, 'current_turn_ind'):
-            self.channel_layer.current_turn_ind = match.current_turn
+            self.channel_layer.current_turn_ind = 0
 
         for ind in range(Game.border_size ** 2):
             x, y = (ind // Game.border_size), (ind % Game.border_size) + 1
@@ -88,17 +90,8 @@ class GameConsumer(AsyncWebsocketConsumer):
 
     async def next_player(self):
 
-        players = list(self.channel_layer.group_channels)
+        players = list(self.channel_layer.group_channels.difference(self.channel_layer.removed_list))
         players.sort()
-
-        # if hasattr(self.channel_layer, 'player_status'):
-        #     players_to_remove = []
-        #     for player in players:
-        #         if self.channel_layer.player_status[str(player)]['status'] == 'loss':
-        #             players_to_remove.append(player)
-        #
-        #     for player in players_to_remove:
-        #         players.remove(player)
 
         if self.channel_layer.current_turn_ind >= len(players) - 1:
             self.channel_layer.current_turn_ind = 0
@@ -161,7 +154,8 @@ class GameConsumer(AsyncWebsocketConsumer):
                 val = await game_class.validate_game(list(self.channel_layer.group_channels))
                 for player in list(val['loss']):
                     self.channel_layer.group_channels.discard(int(player))
-                if val['status'] == 'finish' or len(self.channel_layer.group_channels)==1 :
+                    self.channel_layer.removed_list.add(int(player))
+                if val['status'] == 'finish' or len(self.channel_layer.group_channels) == 1:
                     await self.channel_layer.group_send(
                         self.lobby_group_name,
                         {
@@ -190,6 +184,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         lobby = await sync_to_async(Lobby.objects.get)(id=self.lobby_id)
         lobby.is_match_started = False
         await sync_to_async(lobby.save)()
+        self.channel_layer.removed_list.clear()
 
     async def game_message(self, event):
         # Send message to WebSocket, including the cell ID and color

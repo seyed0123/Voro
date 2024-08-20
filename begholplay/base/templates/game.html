@@ -62,6 +62,16 @@
         const changeAfterSound = new Audio('{{base_url}}sounds/changeAfter.mp3');
         const explode =  new Audio('{{base_url}}sounds/explosion.wav');
         const scream =  new Audio('{{base_url}}sounds/scream.wav');
+        const backgroundSound = new Audio('{{base_url}}sounds/back.mp3');
+        backgroundSound.volume = 0.2;
+
+        backgroundSound.addEventListener('ended', function() {
+            this.currentTime = 0;
+            this.play();
+        }, false);
+
+
+        backgroundSound.play();
 
         // Generate the grid
         for (let row = 0; row < gridSize; row++) {
@@ -91,6 +101,8 @@
         }
 
         $(current_turn).toggleClass('border-1 border-4');
+        $(current_turn).toggleClass('col-lg-1 col-lg-2');
+        $(current_turn).toggleClass('col-2 col-3');
         $("#grid-container").css('background-color', '{{ own_color }}');
 
         var player_colors = {};
@@ -105,7 +117,6 @@
             {#console.log(data)#}
             if(data.message==='change'){
                  const cellId = `#cell-${data.cell}`;
-                 console.log(data.color !== 'None' ,data.color)
                  if (data.color!=='None'){
                      changeSound.play()
                      $(cellId).css('background-color', data.color);
@@ -116,8 +127,14 @@
                  changeAfterSound.play()
             }else if (data.message==='current_turn'){
                 $(current_turn).toggleClass('border-4 border-1');
+                $(current_turn).toggleClass('col-lg-2 col-lg-1');
+                $(current_turn).toggleClass('col-3 col-2');
+                console.log(data,current_turn)
                 current_turn = `#player-card-${data.turn}`;
                 $(current_turn).toggleClass('border-1 border-4');
+                $(current_turn).toggleClass('col-lg-1 col-lg-2');
+                $(current_turn).toggleClass('col-2 col-3');
+                console.log(data,current_turn)
                 $("#grid-container").css('background-color', player_colors[data.turn]);
             }else if(data.message==='error'){
                 alert(data.body);
@@ -133,6 +150,7 @@
                     </div>
                 `;
                 $('#grid-container').html(endgameCard);
+                backgroundSound.pause()
                 explode.play()
                 scream.play()
             }
