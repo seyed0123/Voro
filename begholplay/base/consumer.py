@@ -87,6 +87,8 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         if hasattr(self.channel_layer, 'group_channels'):
             self.channel_layer.group_channels.discard(self.scope['user'].id)
+            if len(self.channel_layer.group_channels) == 0:
+                self.channel_layer.removed_list.clear()
 
     async def next_player(self):
 
