@@ -59,6 +59,7 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         if not hasattr(self.channel_layer, 'current_turn_ind'):
             self.channel_layer.current_turn_ind = 0
+            await self.next_player()
 
         for ind in range(Game.border_size ** 2):
             x, y = (ind // Game.border_size), (ind % Game.border_size) + 1
@@ -87,6 +88,8 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         if hasattr(self.channel_layer, 'group_channels'):
             self.channel_layer.group_channels.discard(self.scope['user'].id)
+            if len(self.channel_layer.group_channels) == 0:
+                self.channel_layer.removed_list.clear()
 
     async def next_player(self):
 
@@ -131,8 +134,11 @@ class GameConsumer(AsyncWebsocketConsumer):
             return
 
         game_class = Game(player, self.lobby_id, self.channel_layer.group_channels)
+        asyncio.create_task(self._run_move_loop(game_class, data["cell"], user.id))
+
+    async def _run_move_loop(self, game_class, start_cell, user_id):
         await game_class.initialize()
-        saf = [(data["cell"], True)]
+        saf = [(start_cell, True)]
         flag = False
         while len(saf) > 0:
             item = saf.pop()
@@ -149,7 +155,9 @@ class GameConsumer(AsyncWebsocketConsumer):
             )
             saf += res[1]
             flag = True
-            # await asyncio.sleep(0.1)
+            await asyncio.sleep(0)
+            if res[0]['number'] == 4:
+                await asyncio.sleep(0.1)
             if not item[1]:
                 val = await game_class.validate_game(list(self.channel_layer.group_channels))
                 for player in list(val['loss']):
@@ -168,7 +176,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                     return
 
         if flag:
-            game_class.board[str(user.id)]['boom'] = False
+            game_class.board[str(user_id)]['boom'] = False
             game_class.match.board = json.dumps(game_class.board)
             await sync_to_async(game_class.match.save)()
             await self.next_player()

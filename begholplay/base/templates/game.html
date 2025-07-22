@@ -1,9 +1,53 @@
 {% extends "base.html" %}
 
 {% block title %}{{ lobby.name }}{% endblock %}
+{% block extra_head %}
+    <style>
+    /* Add this to your stylesheet */
 
+/* Infinite scrolling background animation */
+@keyframes bg-scrolling-reverse {
+  100% { background-position: 50px 50px; }
+}
+
+/* Optional: Forward scrolling (not used here) */
+@keyframes bg-scrolling {
+  0% { background-position: 50px 50px; }
+}
+
+.infinite-bg {
+  /* img size is 50x50 */
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAABnSURBVHja7M5RDYAwDEXRDgmvEocnlrQS2SwUFST9uEfBGWs9c97nbGtDcquqiKhOImLs/UpuzVzWEi1atGjRokWLFi1atGjRokWLFi1atGjRokWLFi1af7Ukz8xWp8z8AAAA//8DAJ4LoEAAlL1nAAAAAElFTkSuQmCC");
+  background-repeat: repeat;
+  background-position: 0 0;
+    width: 100%;
+  animation: bg-scrolling-reverse 0.92s infinite linear;
+
+  color: #999;
+  font: 400 16px/1.5 'Exo', ubuntu, "Segoe UI", helvetica, arial, sans-serif;
+  text-align: center;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Optional text overlay */
+.infinite-bg::before {
+  font-size: 8rem;
+  font-weight: 100;
+  font-style: normal;
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+}
+
+    </style>
+{% endblock %}
 {% block content %}
-    <div class="container">
+    <div class="container infinite-bg">
         <div class="row">
             {% for player in players %}
                 <div id="player-card-{{ player.user.id }}" class="card m-2 border-1 border-dark col-lg-1 col-2 shadow-lg" style="background: {{ player.match_color }}">

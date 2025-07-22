@@ -117,7 +117,13 @@ def play(request):
 
     create_form = JoinLobbyForm()
     join_form = CreateLobbyForm()
-    return render(request, 'home_play.html', {'create_form': create_form, 'join_form': join_form})
+    player = Player.objects.get(user=request.user)
+    lobbies = player.game_players.all()
+    lobby = None
+    if lobbies.exists():
+        lobby = lobbies.first()
+
+    return render(request, 'home_play.html', {'create_form': create_form, 'join_form': join_form,'lobby':lobby})
 
 
 @login_required

@@ -54,7 +54,7 @@ class Game:
         ind += 1
         # Ensure board is up-to-date
         board_value = self.board.get(f"{x},{y}")
-
+        fake = False
         # Start state handling
         if self.board[self.user_id]['status'] == 'not_start' and board_value['Player'] == 'None':
             self.board[self.user_id]['number'] += 1
@@ -94,9 +94,19 @@ class Game:
                 'number': board_value['number'],
                 'color': await sync_to_async(lambda: self.player.match_color)()
             }, []
-
-        # Handle board state reset
         elif board_value['number'] == 3:
+            board_value['number'] += 1
+            board_value['color'] = await sync_to_async(lambda: self.player.match_color)()
+            board_value['Player'] = self.user_id
+            self.match.board = json.dumps(self.board)
+            await sync_to_async(self.match.save)()
+            return {
+                       'cell': ind,
+                       'number': board_value['number'],
+                       'color': await sync_to_async(lambda: self.player.match_color)()
+                   }, [(ind, False)]
+        # Handle board state reset
+        elif board_value['number'] <= 4:
             self.board[board_value['Player']]['number'] -= 1
             self.board[self.user_id]['boom'] = True
 
