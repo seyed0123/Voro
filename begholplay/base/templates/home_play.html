@@ -6,7 +6,20 @@
 <div class="container mt-3">
     <div class="row">
 
-        <div class="col-12 col-md-6 mb-3">
+
+        {% if lobby %}
+            <div class="d-flex justify-content-center mt-4">
+                <div class="col-12 col-md-6">
+                    <div class="shadow p-4 rounded" style="background-color: #2c3e50; color: #ecf0f1;">
+                        <h2 class="text-center mb-4">Continue</h2>
+                        <a href="/lobby/{{ lobby.id }}">
+                            <button class="btn btn-warning w-100">Continue to Lobby</button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12 col-md-6 mb-3">
             <div class="shadow p-4 bg-light rounded">
                 <h2 class="text-center text-dark">Join the Lobby</h2>
                 <form method="post">
@@ -56,6 +69,11 @@
                 </form>
             </div>
         </div>
+        {% endif %}
+
+
+
+
     </div>
 </div>
 {% endblock %}

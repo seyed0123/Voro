@@ -59,6 +59,7 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         if not hasattr(self.channel_layer, 'current_turn_ind'):
             self.channel_layer.current_turn_ind = 0
+            await self.next_player()
 
         for ind in range(Game.border_size ** 2):
             x, y = (ind // Game.border_size), (ind % Game.border_size) + 1

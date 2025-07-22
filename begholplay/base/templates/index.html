@@ -19,7 +19,7 @@
   height: 100vh;
   overflow: hidden;
   background-color: white;
-  background-image: url(https://images.unsplash.com/photo-1615800098779-1be32e60cca3?crop=entropy&cs=srgb&fm=jpg&ixid=M3wzMjM4NDZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE2OTUyNDAwMTN8&ixlib=rb-4.0.3&q=85);
+  background-image: url("{% static 'back.png' %}");
   background-size: cover;
   background-repeat: no-repeat;
   user-select: none;
@@ -71,9 +71,9 @@
     drop-shadow(0px 0px 0.1px gold);
   */
   filter: brightness(1.2) hue-rotate(var(--hue));
-  background-image: url(https://images.unsplash.com/photo-1580822115965-0b2532068eff?&ixid=M3wzMjM4NDZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE2OTUxNDUzNzJ8&ixlib=rb-4.0.3&q=100&w=200&dpr=2);
+  background-image: url("{% static 'back_star.png' %}");
   background-position: center;
-  background-size: 200px auto; /* 必要に応じて調整 */
+  background-size: 200px auto;
   background-repeat: repeat;
   transform: translateZ(0);
   background-color: #78C841;

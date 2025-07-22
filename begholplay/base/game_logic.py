@@ -54,7 +54,7 @@ class Game:
         ind += 1
         # Ensure board is up-to-date
         board_value = self.board.get(f"{x},{y}")
-
+        fake = False
         # Start state handling
         if self.board[self.user_id]['status'] == 'not_start' and board_value['Player'] == 'None':
             self.board[self.user_id]['number'] += 1
