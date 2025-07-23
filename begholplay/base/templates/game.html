@@ -15,11 +15,12 @@
   0% { background-position: 50px 50px; }
 }
 
+
 .infinite-bg {
   /* img size is 50x50 */
   background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAABnSURBVHja7M5RDYAwDEXRDgmvEocnlrQS2SwUFST9uEfBGWs9c97nbGtDcquqiKhOImLs/UpuzVzWEi1atGjRokWLFi1atGjRokWLFi1atGjRokWLFi1af7Ukz8xWp8z8AAAA//8DAJ4LoEAAlL1nAAAAAElFTkSuQmCC");
   object-fit: cover;
-  position: fixed;
+  {% comment %} position: fixed; {% endcomment %}
   top: 0;
   left: 0;
   width: 100vw;            
@@ -31,8 +32,8 @@
   color: #999;
   font: 400 16px/1.5 'Exo', ubuntu, "Segoe UI", helvetica, arial, sans-serif;
   text-align: center;
-  padding: 2rem;
-  position: relative;
+  {% comment %} padding: 2rem; {% endcomment %}
+  {% comment %} position: relative; {% endcomment %}
   {% comment %} overflow: hidden; {% endcomment %}
 }
 
@@ -165,11 +166,23 @@
         for (let row = 0; row < gridSize; row++) {
             const rowDiv = $('<div class="w-100 d-flex"></div>');
             for (let col = 0; col < gridSize; col++) {
-                const cellSize = $(window).width() < 700 ? cellSizeMobile : cellSizeLaptop;
                 const ind = row * gridSize + col + 1
-                const cell = $(`
-                    <div class="flex-fill m-1 rounded shadow-lg border-2" id="cell-${ind}" style="background-color: #007bff; color: white; border: 1px solid #0056b3; height: ${cellSize}vw; width: ${cellSize}vw; display: flex; align-items: center; justify-content: center;">
+                function resizeCells() {
+                    let cellSize = $(window).width() < 600 ? 10 : 4;
+                    cellSize = $(window).width() < 800 ? 8 : 4;
+                    $('.grid-cell').each(function () {
+                        $(this).css({
+                            width: `${cellSize}vw`,
+                            height: `${cellSize}vw`
+                        });
+                    });
+                }
 
+
+                const cell = $(`
+                    <div class="grid-cell flex-fill m-1 rounded shadow-lg border-2" id="cell-${ind}" 
+                        style="background-color: #007bff; color: white; border: 1px solid #0056b3; 
+                        display: flex; align-items: center; justify-content: center;height:100%">
                     </div>
                 `);
 
@@ -187,6 +200,8 @@
             }
             gridContainer.append(rowDiv);
         }
+        resizeCells(); 
+        $(window).resize(resizeCells);
 
         $(current_turn).toggleClass('border-1 border-7');
         {% comment %} $(current_turn).toggleClass('col-lg-1 col-lg-2'); {% endcomment %}
