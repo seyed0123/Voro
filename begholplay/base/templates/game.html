@@ -18,9 +18,14 @@
 .infinite-bg {
   /* img size is 50x50 */
   background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAABnSURBVHja7M5RDYAwDEXRDgmvEocnlrQS2SwUFST9uEfBGWs9c97nbGtDcquqiKhOImLs/UpuzVzWEi1atGjRokWLFi1atGjRokWLFi1atGjRokWLFi1af7Ukz8xWp8z8AAAA//8DAJ4LoEAAlL1nAAAAAElFTkSuQmCC");
+  object-fit: cover;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;            
+  height: 100vh;  
   background-repeat: repeat;
   background-position: 0 0;
-    width: 100%;
   animation: bg-scrolling-reverse 0.92s infinite linear;
 
   color: #999;
@@ -44,14 +49,15 @@
   pointer-events: none;
 }
 
+
     </style>
 {% endblock %}
 {% block content %}
-    <div class="container infinite-bg">
+    <div class="container">
         <div class="row">
             {% for player in players %}
                 <div id="player-card-{{ player.user.id }}" class="card m-2 border-1 border-dark col-lg-1 col-2 shadow-lg" style="background: {{ player.match_color }}">
-                  <img src="{{ player.profile_photo.url }}" class="card-img-top py-1 py-md-2" alt="Profile_photo">
+                  <img src="{{player.profile_photo.url}}" class="card-img-top py-1 py-md-2" alt="Profile_photo">
                     {% if player.user.id == user_id %}
                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-award" viewBox="0 0 16 16">
                           <path d="M9.669.864 8 0 6.331.864l-1.858.282-.842 1.68-1.337 1.32L2.6 6l-.306 1.854 1.337 1.32.842 1.68 1.858.282L8 12l1.669-.864 1.858-.282.842-1.68 1.337-1.32L13.4 6l.306-1.854-1.337-1.32-.842-1.68zm1.196 1.193.684 1.365 1.086 1.072L12.387 6l.248 1.506-1.086 1.072-.684 1.365-1.51.229L8 10.874l-1.355-.702-1.51-.229-.684-1.365-1.086-1.072L3.614 6l-.25-1.506 1.087-1.072.684-1.365 1.51-.229L8 1.126l1.356.702z"/>
@@ -85,8 +91,10 @@
                 if(number == 4){
                     this.html(`
                     <div class="d-flex justify-content-center flex-column align-items-center"> 
-                    <div class="circle col-6"></div> 
-                                <div class="circle col-6"></div> 
+                    <div class="d-flex flex-row">
+                        <div class="circle col-6"></div>
+                        <div class="circle col-6"></div> 
+                    </div>
                     <div class="d-flex flex-row">
                         <div class="circle col-6"></div>
                         <div class="circle col-6"></div> 
@@ -97,7 +105,7 @@
                     this.html(`<div class="d-flex justify-content-center flex-column align-items-center"> <div class="circle col-6 self-items-center"></div> <div class="d-flex flex-row"><div class="circle col-6"></div><div class="circle col-6"></div> </div></div>`)
                 }
                 else {
-                    this.append('<div class="circle col-6"></div>');
+                    this.append('<div class="circle col-6 "></div>');
                 }
             }
 
@@ -109,8 +117,8 @@
         $(document).ready(function () {
         const gridSize = 8;
         const gridContainer = $('#grid-container');
-        const cellSizeMobile = 100 / gridSize; // For mobile views
-        const cellSizeLaptop = 3; // For larger views
+        const cellSizeMobile = 10; // For mobile views
+        const cellSizeLaptop = 4; // For larger views
 
         // Create the WebSocket connection
         var current_turn = '#player-card-{{ lobby.owner.id }}'
@@ -137,10 +145,10 @@
         for (let row = 0; row < gridSize; row++) {
             const rowDiv = $('<div class="w-100 d-flex"></div>');
             for (let col = 0; col < gridSize; col++) {
-                const cellSize = $(window).width() < 992 ? cellSizeMobile : cellSizeLaptop;
+                const cellSize = $(window).width() < 700 ? cellSizeMobile : cellSizeLaptop;
                 const ind = row * gridSize + col + 1
                 const cell = $(`
-                    <div class="flex-fill m-1 rounded shadow-lg border-2" id="cell-${ind}" style="background-color: #007bff; color: white; border: 1px solid #0056b3; height: 10vw; width: ${cellSize}vw; display: flex; align-items: center; justify-content: center;">
+                    <div class="flex-fill m-1 rounded shadow-lg border-2" id="cell-${ind}" style="background-color: #007bff; color: white; border: 1px solid #0056b3; height: ${cellSize}vw; width: ${cellSize}vw; display: flex; align-items: center; justify-content: center;">
 
                     </div>
                 `);
