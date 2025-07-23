@@ -33,7 +33,7 @@
   text-align: center;
   padding: 2rem;
   position: relative;
-  overflow: hidden;
+  {% comment %} overflow: hidden; {% endcomment %}
 }
 
 /* Optional text overlay */
@@ -49,17 +49,37 @@
   pointer-events: none;
 }
 
+.icon{
+  width: 15px;
+  height: 15px;
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+}
+.border-7 {
+  border: 7px solid;
+}
+@media (min-width: 800px) {
+  .icon {
+    width: 30px;
+    height: 30px;
+    bottom: 15px;
+    left: 15px;
+  }
+}
+
+
 
     </style>
 {% endblock %}
 {% block content %}
     <div class="container">
-        <div class="row">
+        <div class="d-flex justify-content-left align-items-center">
             {% for player in players %}
-                <div id="player-card-{{ player.user.id }}" class="card m-2 border-1 border-dark col-lg-1 col-2 shadow-lg" style="background: {{ player.match_color }}">
-                  <img src="{{player.profile_photo.url}}" class="card-img-top py-1 py-md-2" alt="Profile_photo">
+                <div id="player-card-{{ player.user.id }}" class="card m-2 border-7 col-lg-1 col-lg-2 col-3 shadow-lg" style="border-color: {{ player.match_color }}; background: {{ player.match_color }}">
+                  <img src="{{player.profile_photo.url}}" class="card-img-top" style=" position: relative; border:2px solid {{ player.match_color }}; border-radius: 5px; width:100%; height:100%" alt="Profile_photo">
                     {% if player.user.id == user_id %}
-                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-award" viewBox="0 0 16 16">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill={{ player.match_color }} class="icon bi bi-award" viewBox="0 0 16 16">
                           <path d="M9.669.864 8 0 6.331.864l-1.858.282-.842 1.68-1.337 1.32L2.6 6l-.306 1.854 1.337 1.32.842 1.68 1.858.282L8 12l1.669-.864 1.858-.282.842-1.68 1.337-1.32L13.4 6l.306-1.854-1.337-1.32-.842-1.68zm1.196 1.193.684 1.365 1.086 1.072L12.387 6l.248 1.506-1.086 1.072-.684 1.365-1.51.229L8 10.874l-1.355-.702-1.51-.229-.684-1.365-1.086-1.072L3.614 6l-.25-1.506 1.087-1.072.684-1.365 1.51-.229L8 1.126l1.356.702z"/>
                           <path d="M4 11.794V16l4-1 4 1v-4.206l-2.018.306L8 13.126 6.018 12.1z"/>
                         </svg>
@@ -168,9 +188,9 @@
             gridContainer.append(rowDiv);
         }
 
-        $(current_turn).toggleClass('border-1 border-4');
-        $(current_turn).toggleClass('col-lg-1 col-lg-2');
-        $(current_turn).toggleClass('col-2 col-3');
+        $(current_turn).toggleClass('border-1 border-7');
+        {% comment %} $(current_turn).toggleClass('col-lg-1 col-lg-2'); {% endcomment %}
+        {% comment %} $(current_turn).toggleClass('col-2 col-3'); {% endcomment %}
         $("#grid-container").css('background-color', '{{ own_color }}');
 
         var player_colors = {};
@@ -194,14 +214,14 @@
                 $(cellId).generateCircles(data.number);
                  changeAfterSound.play()
             }else if (data.message==='current_turn'){
-                $(current_turn).toggleClass('border-4 border-1');
-                $(current_turn).toggleClass('col-lg-2 col-lg-1');
-                $(current_turn).toggleClass('col-3 col-2');
+                $(current_turn).toggleClass('border-7 border-1');
+                {% comment %} $(current_turn).toggleClass('col-lg-2 col-lg-1'); {% endcomment %}
+                {% comment %} $(current_turn).toggleClass('col-3 col-2'); {% endcomment %}
                 console.log(data,current_turn)
                 current_turn = `#player-card-${data.turn}`;
-                $(current_turn).toggleClass('border-1 border-4');
-                $(current_turn).toggleClass('col-lg-1 col-lg-2');
-                $(current_turn).toggleClass('col-2 col-3');
+                $(current_turn).toggleClass('border-1 border-7');
+                {% comment %} $(current_turn).toggleClass('col-lg-1 col-lg-2'); {% endcomment %}
+                {% comment %} $(current_turn).toggleClass('col-2 col-3'); {% endcomment %}
                 console.log(data,current_turn)
                 $("#grid-container").css('background-color', player_colors[data.turn]);
             }else if(data.message==='error'){
