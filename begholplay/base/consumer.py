@@ -2,13 +2,14 @@ import asyncio
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
-from django.contrib.auth.models import AnonymousUser
 
 from base.game_logic import *
 
 
 class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
+        from django.contrib.auth.models import AnonymousUser
+        from base.models import Lobby, Player
         self.lobby_id = self.scope['url_route']['kwargs']['pk']
         self.lobby_group_name = f'lobby_{self.lobby_id}'
 
@@ -52,7 +53,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         await self.send_game_state(lobby)
 
     async def send_game_state(self, lobby):
-
+        from base.models import Match
         match = await database_sync_to_async(Match.objects.get)(lobby=lobby)
 
         board = json.loads(match.board)
@@ -92,7 +93,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                 self.channel_layer.removed_list.clear()
 
     async def next_player(self):
-
+        from base.models import Match
         players = list(self.channel_layer.group_channels.difference(self.channel_layer.removed_list))
         players.sort()
 
@@ -115,6 +116,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         )
 
     async def receive(self, text_data):
+        from base.models import Player
         # Handle incoming WebSocket messages
         data = json.loads(text_data)
         user = self.scope['user']
@@ -187,6 +189,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             }))
 
     async def delete_match(self):
+        from base.models import Match, Lobby
         match = await sync_to_async(Match.objects.get)(lobby_id=self.lobby_id)
         await sync_to_async(match.delete)()
         lobby = await sync_to_async(Lobby.objects.get)(id=self.lobby_id)

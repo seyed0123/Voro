@@ -1,6 +1,5 @@
 from asgiref.sync import sync_to_async
 
-from base.models import *
 import json
 
 
@@ -9,6 +8,7 @@ def xy2ind(x, y):
 
 
 def create_game(lobby, user):
+    from base.models import Match
     board = {}
     for ind in range(Game.border_size ** 2):
         x, y = (ind // Game.border_size), (ind % Game.border_size) + 1
@@ -26,6 +26,7 @@ class Game:
     border_size = 8
 
     def __init__(self, player, lobby_id, user_ids):
+
         self.player = player
         self.lobby_id = lobby_id
         self.user_ids = user_ids
@@ -35,6 +36,7 @@ class Game:
         self.user_id = 0
 
     async def initialize(self):
+        from base.models import Match, Lobby
         # Fetch the match and players asynchronously
         self.match = await sync_to_async(Match.objects.get)(lobby_id=self.lobby_id)
 
