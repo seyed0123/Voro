@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+    <div class="container my-3 p-5 mx-auto bg-body-secondary">
+        <div class="row">
+            <h2>Login</h2>
+        </div>
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form class="row flex-column flex-md-row" method="post">
+        {% csrf_token %}
+
+        <div class="col-12 col-md-6">
+            <div class="form-group me-md-3">
+                {{ form.username.label_tag }}
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <div class="alert alert-danger mt-2">
+                        {% for error in form.username.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6">
+            <div class="form-group">
+                {{ form.password.label_tag }}
+                {{ form.password }}
+                {% if form.password.errors %}
+                    <div class="alert alert-danger mt-2">
+                        {% for error in form.password.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary mt-3">Login</button>
+        </div>
+    </form>
+
+
+    </div>
+{% endblock %}

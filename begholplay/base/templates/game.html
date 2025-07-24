@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+
+{% block title %}{{ lobby.name }}{% endblock %}
+{% block extra_head %}
+    <style>
+    /* Add this to your stylesheet */
+
+/* Infinite scrolling background animation */
+@keyframes bg-scrolling-reverse {
+  100% { background-position: 50px 50px; }
+}
+
+/* Optional: Forward scrolling (not used here) */
+@keyframes bg-scrolling {
+  0% { background-position: 50px 50px; }
+}
+
+
+.infinite-bg {
+  /* img size is 50x50 */
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAABnSURBVHja7M5RDYAwDEXRDgmvEocnlrQS2SwUFST9uEfBGWs9c97nbGtDcquqiKhOImLs/UpuzVzWEi1atGjRokWLFi1atGjRokWLFi1atGjRokWLFi1af7Ukz8xWp8z8AAAA//8DAJ4LoEAAlL1nAAAAAElFTkSuQmCC");
+  object-fit: cover;
+  {% comment %} position: fixed; {% endcomment %}
+  top: 0;
+  left: 0;
+  width: 100vw;            
+  height: 100vh;  
+  background-repeat: repeat;
+  background-position: 0 0;
+  animation: bg-scrolling-reverse 0.92s infinite linear;
+
+  color: #999;
+  font: 400 16px/1.5 'Exo', ubuntu, "Segoe UI", helvetica, arial, sans-serif;
+  text-align: center;
+  {% comment %} padding: 2rem; {% endcomment %}
+  {% comment %} position: relative; {% endcomment %}
+  {% comment %} overflow: hidden; {% endcomment %}
+}
+
+/* Optional text overlay */
+.infinite-bg::before {
+  font-size: 8rem;
+  font-weight: 100;
+  font-style: normal;
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+}
+
+.icon{
+  width: 15px;
+  height: 15px;
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+}
+.border-7 {
+  border: 7px solid;
+}
+@media (min-width: 800px) {
+  .icon {
+    width: 30px;
+    height: 30px;
+    bottom: 15px;
+    left: 15px;
+  }
+}
+
+
+
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <div class="d-flex justify-content-left align-items-center">
+            {% for player in players %}
+                <div id="player-card-{{ player.user.id }}" class="card m-2 border-1 col-lg-1 col-lg-2 col-3 shadow-lg" style="border-color: {{ player.match_color }}; background: {{ player.match_color }}">
+                  <img src="{{player.profile_photo.url}}" class="card-img-top" style=" position: relative; border:2px solid {{ player.match_color }}; border-radius: 5px; width:100%; height:100px; object-fit: cover;" alt="Profile_photo">
+                    {% if player.user.id == user_id %}
+                       <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill={{ player.match_color }} class="icon bi bi-award" viewBox="0 0 16 16">
+                          <path d="M9.669.864 8 0 6.331.864l-1.858.282-.842 1.68-1.337 1.32L2.6 6l-.306 1.854 1.337 1.32.842 1.68 1.858.282L8 12l1.669-.864 1.858-.282.842-1.68 1.337-1.32L13.4 6l.306-1.854-1.337-1.32-.842-1.68zm1.196 1.193.684 1.365 1.086 1.072L12.387 6l.248 1.506-1.086 1.072-.684 1.365-1.51.229L8 10.874l-1.355-.702-1.51-.229-.684-1.365-1.086-1.072L3.614 6l-.25-1.506 1.087-1.072.684-1.365 1.51-.229L8 1.126l1.356.702z"/>
+                          <path d="M4 11.794V16l4-1 4 1v-4.206l-2.018.306L8 13.126 6.018 12.1z"/>
+                        </svg>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+        <div id="grid-container" class="container mt-5 p-2 border" >
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block js %}
+    <script>
+    (function($) {
+        $.fn.generateCircles = function(number) {
+            // Ensure the number is between 0 and 4
+            if (number < 0 || number > 4) {
+                console.error("Number must be between 0 and 4.");
+                return this;
+            }
+
+            // Clear any existing circles
+            this.empty();
+
+            // Generate the circles
+            for (let i = 0; i < number; i++) {
+                if(number == 4){
+                    this.html(`
+                    <div class="d-flex justify-content-center flex-column align-items-center"> 
+                    <div class="d-flex flex-row">
+                        <div class="circle col-6"></div>
+                        <div class="circle col-6"></div> 
+                    </div>
+                    <div class="d-flex flex-row">
+                        <div class="circle col-6"></div>
+                        <div class="circle col-6"></div> 
+                    </div>
+                    </div>`)
+                }
+                else if(number == 3) {
+                    this.html(`<div class="d-flex justify-content-center flex-column align-items-center"> <div class="circle col-6 self-items-center"></div> <div class="d-flex flex-row"><div class="circle col-6"></div><div class="circle col-6"></div> </div></div>`)
+                }
+                else {
+                    this.append('<div class="circle col-6 "></div>');
+                }
+            }
+
+            // Return the jQuery object for chaining
+            return this;
+        };
+    })(jQuery);
+
+        $(document).ready(function () {
+        const gridSize = 8;
+        const gridContainer = $('#grid-container');
+        const cellSizeMobile = 10; // For mobile views
+        const cellSizeLaptop = 4; // For larger views
+
+        // Create the WebSocket connection
+        var current_turn = '#player-card-{{ lobby.owner.id }}'
+        const lobbyId = "{{ lobby.pk }}";
+        const wsUrl = `ws://${window.location.host}/ws/lobby/${lobbyId}/`;
+        const gameSocket = new WebSocket(wsUrl);
+        const clickSound = new Audio('{{base_url}}sounds/click.wav');
+        const changeSound = new Audio('{{base_url}}sounds/change.wav');
+        const changeAfterSound = new Audio('{{base_url}}sounds/changeAfter.mp3');
+        const explode =  new Audio('{{base_url}}sounds/explosion.wav');
+        const scream =  new Audio('{{base_url}}sounds/scream.wav');
+        const backgroundSound = new Audio('{{base_url}}sounds/back.mp3');
+        backgroundSound.volume = 0.2;
+
+        backgroundSound.addEventListener('ended', function() {
+            this.currentTime = 0;
+            this.play();
+        }, false);
+
+
+        backgroundSound.play();
+
+        // Generate the grid
+        for (let row = 0; row < gridSize; row++) {
+            const rowDiv = $('<div class="w-100 d-flex"></div>');
+            for (let col = 0; col < gridSize; col++) {
+                const ind = row * gridSize + col + 1
+                function resizeCells() {
+                    let cellSize = $(window).width() < 600 ? 10 : 4;
+                    cellSize = $(window).width() < 800 ? 8 : 4;
+                    $('.grid-cell').each(function () {
+                        $(this).css({
+                            width: `${cellSize}vw`,
+                            height: `${cellSize}vw`
+                        });
+                    });
+                }
+
+
+                const cell = $(`
+                    <div class="grid-cell flex-fill m-1 rounded shadow-lg border-2" id="cell-${ind}" 
+                        style="background-color: #007bff; color: white; border: 1px solid #0056b3; 
+                        display: flex; align-items: center; justify-content: center;height:100%">
+                    </div>
+                `);
+
+                // Add click event to send a message via WebSocket
+                cell.on('click', function() {
+                    const message = {
+                        'message': `User pressed button ${ind}`,
+                        'cell': ind
+                    };
+                    gameSocket.send(JSON.stringify(message));
+                    clickSound.play();
+                });
+
+                rowDiv.append(cell);
+            }
+            gridContainer.append(rowDiv);
+        }
+        resizeCells(); 
+        $(window).resize(resizeCells);
+
+        $(current_turn).toggleClass('border-1 border-7');
+        {% comment %} $(current_turn).toggleClass('col-lg-1 col-lg-2'); {% endcomment %}
+        {% comment %} $(current_turn).toggleClass('col-2 col-3'); {% endcomment %}
+        $("#grid-container").css('background-color', '{{ own_color }}');
+
+        var player_colors = {};
+        {% for player in players %}
+            player_colors['{{ player.user.id }}'] = '{{ player.match_color|escapejs }}';
+        {% endfor %}
+        console.log(player_colors);
+
+        // Handle incoming messages from WebSocket
+        gameSocket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            {#console.log(data)#}
+            if(data.message==='change'){
+                 const cellId = `#cell-${data.cell}`;
+                 if (data.color!=='None'){
+                     changeSound.play()
+                     $(cellId).css('background-color', data.color);
+                 }else{
+                     $(cellId).css('background-color', '#007bff');
+                 }
+                $(cellId).generateCircles(data.number);
+                 changeAfterSound.play()
+            }else if (data.message==='current_turn'){
+                $(current_turn).toggleClass('border-7 border-1');
+                {% comment %} $(current_turn).toggleClass('col-lg-2 col-lg-1'); {% endcomment %}
+                {% comment %} $(current_turn).toggleClass('col-3 col-2'); {% endcomment %}
+                console.log(data,current_turn)
+                current_turn = `#player-card-${data.turn}`;
+                $(current_turn).toggleClass('border-1 border-7');
+                {% comment %} $(current_turn).toggleClass('col-lg-1 col-lg-2'); {% endcomment %}
+                {% comment %} $(current_turn).toggleClass('col-2 col-3'); {% endcomment %}
+                console.log(data,current_turn)
+                $("#grid-container").css('background-color', player_colors[data.turn]);
+            }else if(data.message==='error'){
+                alert(data.body);
+            }else if(data.message === 'endgame'){
+                const endgameCard = `
+                    <div class="card text-center">
+                        <img src="${$(current_turn).find('img').attr('src')}" class="card-img-top" alt="Endgame Image">
+                        <div class="card-body">
+                            <h5 class="card-title">Game Finished</h5>
+                            <p class="card-text">Congratulations for your play.</p>
+                            <a href="{{lobby_url}}" class="btn btn-primary">Go to Lobby Details</a>
+                        </div>
+                    </div>
+                `;
+                $('#grid-container').html(endgameCard);
+                backgroundSound.pause()
+                explode.play()
+                scream.play()
+            }
+            {#alert(data.message);#}
+
+            // Change the color of the clicked cell
+            {#const cellId = `#cell-${data.cell}`;#}
+            {#$(cellId).css('background-color', data.color);#}
+        };
+
+        // Handle WebSocket closure
+        gameSocket.onclose = function(event) {
+            console.error('Game socket closed unexpectedly');
+            alert('Socket closed refresh the page')
+        };
+
+        // Optionally, handle WebSocket errors
+        gameSocket.onerror = function(error) {
+            console.error('WebSocket error:', event);
+        };
+    });
+
+    </script>
+{% endblock %}
