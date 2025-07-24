@@ -16,9 +16,11 @@
             </div>
         {% endif %}
 
-        <form class="row align-items-center" method="post">
+        <form class="row flex-column flex-md-row align-items-start" method="post">
             {% csrf_token %}
-            <div class="col-6">
+
+            <!-- Username Field -->
+            <div class="col-12 col-md-6 mb-3 pe-md-3">
                 <div class="form-group">
                     {{ form.username.label_tag }}
                     {{ form.username }}
@@ -31,11 +33,13 @@
                     {% endif %}
                 </div>
             </div>
-            <div class="col-6">
+
+            <!-- Password1 and Password2 Fields -->
+            <div class="col-12 col-md-6 mb-3">
                 <div class="form-group">
                     {{ form.password1.label_tag }}
                     {{ form.password1 }}
-                   {% if form.password1.errors %}
+                    {% if form.password1.errors %}
                         <div class="alert alert-danger mt-2">
                             {% for error in form.password1.errors %}
                                 <p>{{ error }}</p>
@@ -44,7 +48,7 @@
                     {% endif %}
                 </div>
 
-                <div class="form-group">
+                <div class="form-group mt-3">
                     {{ form.password2.label_tag }}
                     {{ form.password2 }}
                     {% if form.password2.errors %}
@@ -56,7 +60,12 @@
                     {% endif %}
                 </div>
             </div>
-            <button type="submit" class="col-sm-2 col-3 btn btn-primary m-3">Signup</button>
+
+            <!-- Submit Button -->
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary mt-3">Signup</button>
+            </div>
         </form>
+
     </div>
 {% endblock %}

@@ -16,36 +16,42 @@
             </div>
         {% endif %}
 
-        <form class="row" method="post">
-            {% csrf_token %}
-            <div class="col-6">
-                <div class="form-group">
-                    {{ form.username.label_tag }}
-                    {{ form.username }}
-                    {% if form.username.errors %}
-                        <div class="alert alert-danger mt-2">
-                            {% for error in form.username.errors %}
-                                <p>{{ error }}</p>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
+        <form class="row flex-column flex-md-row" method="post">
+        {% csrf_token %}
+
+        <div class="col-12 col-md-6">
+            <div class="form-group me-md-3">
+                {{ form.username.label_tag }}
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <div class="alert alert-danger mt-2">
+                        {% for error in form.username.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
-            <div class="col-6">
-                <div class="form-group">
-                    {{ form.password.label_tag }}
-                    {{ form.password }}
-                   {% if form.password.errors %}
-                        <div class="alert alert-danger mt-2">
-                            {% for error in form.password.errors %}
-                                <p>{{ error }}</p>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
+        </div>
+
+        <div class="col-12 col-md-6">
+            <div class="form-group">
+                {{ form.password.label_tag }}
+                {{ form.password }}
+                {% if form.password.errors %}
+                    <div class="alert alert-danger mt-2">
+                        {% for error in form.password.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
-            <button type="submit" class="col-sm-2 col-3 btn btn-primary m-3">Login</button>
-        </form>
+        </div>
+
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary mt-3">Login</button>
+        </div>
+    </form>
+
 
     </div>
 {% endblock %}
