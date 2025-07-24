@@ -10,22 +10,28 @@
         </div>
         <ol class="list-group list-group-numbered" id="players-list">
             {% for player in players %}
-                {% if player.user == owner_player.user %}
-                    <li class="list-group-item d-flex align-items-center list-group-item-info">
-                        <img src="{{ player.profile_photo.url }}" alt="Profile Photo" class="img-thumbnail img-fluid me-3" style="max-width: 10%; height: auto;">
-                        {{ player.user.username }}
-                        <div class="img-thumbnail ms-auto" style="background-color: {{ player.match_color }}; width: 3vw; height: 2vw;"></div>
-                    </li>
-                {% else %}
-                     <li class="list-group-item d-flex align-items-center">
-                        <img src="{{ player.profile_photo.url }}" alt="Profile Photo" class="img-thumbnail img-fluid me-3" style="max-width: 10%; height: auto;">
-                        {{ player.user.username }}
-                     <div class="img-thumbnail ms-auto" style="background-color: {{ player.match_color }}; width: 3vw; height: 2vw;"></div>
-                    </li>
+                <li class="list-group-item d-flex align-items-center {% if player.user == owner_player.user %}list-group-item-info{% endif %}">
+                    <!-- Profile Image -->
+                    <img src="{{ player.profile_photo.url }}"
+                         alt="Profile Photo"
+                         class="img-thumbnail img-fluid me-3"
+                         style="width: 60px; height: 60px; object-fit: cover;">
 
-                {% endif %}
+                    <!-- Username with optional badge -->
+                    <div class="d-flex align-items-center">
+                        <span>{{ player.user.username }}</span>
+                        {% if player.user == owner_player.user %}
+                            <span class="badge bg-primary ms-2">Owner</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Color Badge -->
+                    <div class="img-thumbnail ms-auto"
+                         style="background-color: {{ player.match_color }}; width: 3vw; height: 2vw;"></div>
+                </li>
             {% endfor %}
         </ol>
+
 
     <div id="spinner" class="text-center mt-3" style="display: none;">
         <div class="spinner-grow text-info" role="status">

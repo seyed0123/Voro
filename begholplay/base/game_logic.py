@@ -65,10 +65,10 @@ class Game:
             self.match.board = json.dumps(self.board)
             await sync_to_async(self.match.save)()
             return {
-                'cell': ind,
-                'number': board_value['number'],
-                'color': await sync_to_async(lambda: self.player.match_color)()
-            }, []
+                       'cell': ind,
+                       'number': board_value['number'],
+                       'color': await sync_to_async(lambda: self.player.match_color)()
+                   }, []
 
         # Check if this is the first click
         if first:
@@ -76,25 +76,15 @@ class Game:
                 return None
 
         # Handle updating the board
-        if board_value['number'] < 3:
+        if board_value['number'] <= 3:
             if board_value['Player'] == 'None':
                 self.board[self.user_id]['number'] += 1
             elif board_value['Player'] != self.user_id:
                 self.board[board_value['Player']]['number'] -= 1
                 self.board[self.user_id]['number'] += 1
-
-
-            board_value['number'] += 1
-            board_value['color'] = await sync_to_async(lambda: self.player.match_color)()
-            board_value['Player'] = self.user_id
-            self.match.board = json.dumps(self.board)
-            await sync_to_async(self.match.save)()
-            return {
-                'cell': ind,
-                'number': board_value['number'],
-                'color': await sync_to_async(lambda: self.player.match_color)()
-            }, []
-        elif board_value['number'] == 3:
+            ret = []
+            if board_value['number'] == 3:
+                ret.append((ind, False))
             board_value['number'] += 1
             board_value['color'] = await sync_to_async(lambda: self.player.match_color)()
             board_value['Player'] = self.user_id
@@ -104,7 +94,8 @@ class Game:
                        'cell': ind,
                        'number': board_value['number'],
                        'color': await sync_to_async(lambda: self.player.match_color)()
-                   }, [(ind, False)]
+                   }, ret
+
         # Handle board state reset
         elif board_value['number'] <= 4:
             self.board[board_value['Player']]['number'] -= 1
@@ -128,10 +119,10 @@ class Game:
                 ret_list.append((ind + 1, False))
 
             return {
-                'cell': ind,
-                'number': board_value['number'],
-                'color': 'None'
-            }, ret_list
+                       'cell': ind,
+                       'number': board_value['number'],
+                       'color': 'None'
+                   }, ret_list
 
     async def validate_game(self, players):
         # Initialize player status
@@ -157,7 +148,8 @@ class Game:
         ok_player = None
         for player in players:
             player_id = str(player_ids[player])
-            if players_status[player_id]['number'] == 0 and self.board[player_id]['status'] == 'start' and self.board[player_id]['boom'] == False:
+            if players_status[player_id]['number'] == 0 and self.board[player_id]['status'] == 'start' and \
+                    self.board[player_id]['boom'] == False:
                 # players_status[player_id]['status'] = 'loss'
                 players_status['loss'].add(player_id)
                 num_loss += 1
